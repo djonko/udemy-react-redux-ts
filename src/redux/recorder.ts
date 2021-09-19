@@ -1,36 +1,46 @@
-import { Action } from "redux";
-import { AnyAction } from "redux";
+import { Action } from 'redux';
+import { rootState } from './store';
 
 interface RecorderState {
-    startDate: string
-    endDate: string
+  startDate: string;
 }
-const START = "recorder/start"
-const STOP = "recorder/stop"
-type StartAction = Action<typeof START>
-type StopAction = Action<typeof STOP>
-type RecorderAction = StartAction | StopAction
-export const start = (): StartAction => ({ type: START })
-export const stop = (): StopAction => ({ type: STOP })
-const recorderReducer = (state: RecorderState, action: RecorderAction): RecorderState => {
+const START = 'recorder/start';
+const STOP = 'recorder/stop';
+type StartAction = Action<typeof START>;
+type StopAction = Action<typeof STOP>;
+type RecorderAction = StartAction | StopAction;
 
-    switch (action.type) {
+export const start = (): StartAction => ({ type: START });
+export const stop = (): StopAction => ({ type: STOP });
 
-        case START: {
-            return {
-                ...state,
-                startDate: new Date().toISOString()
-            }
-        }
-        case STOP: {
-            return {
-                ...state,
-                startDate: ''
-            }
-        }
-        default:
-            return state;
+export const selectRecorderState = (rootState: rootState) => rootState.recorder;
+
+export const selectDateStart = (rootState: rootState) =>
+  selectRecorderState(rootState).startDate;
+
+const initialeState: RecorderState = {
+  startDate: '',
+};
+const recorderReducer = (
+  state: RecorderState = initialeState,
+  action: RecorderAction
+): RecorderState => {
+  switch (action.type) {
+    case START: {
+      return {
+        ...state,
+        startDate: new Date().toISOString(),
+      };
     }
-}
+    case STOP: {
+      return {
+        ...state,
+        startDate: '',
+      };
+    }
+    default:
+      return state;
+  }
+};
 
-export default recorderReducer
+export default recorderReducer;
