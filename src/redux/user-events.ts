@@ -1,8 +1,8 @@
-import { Action, AnyAction } from "redux"
+import { Action } from "redux"
 import { ThunkAction } from "redux-thunk"
 import { RootState } from "./store"
 
-interface UserEvent {
+export interface UserEvent {
     id: number;
     title: string;
     dateStart: string;
@@ -20,8 +20,19 @@ interface LoadSuccessAction extends Action<typeof LOAD_SUCCESS> {
         events: UserEvent[]
     }
 }
-type EventAction = LoadRequestAction | LoadSuccessAction
+const LOAD_FAILURE = 'userEvents/load_failure'
+interface LoadFailureAction extends Action<typeof LOAD_FAILURE> {
+    error: String
+}
+type EventAction = LoadRequestAction | LoadSuccessAction | LoadFailureAction
 
+const selectUserEventsState = (rootState: RootState) => rootState.userEvents
+export const selectUserEventsArray = (rootState: RootState) => {
+    const state = selectUserEventsState(rootState);
+    return state.allIds.map(id => state.byIds[id]);
+}
+
+//dispatch function
 export const loadUserEvents = (): ThunkAction<void, RootState, undefined, EventAction> => async (dispatch, getState) => {
     dispatch({
         type: LOAD_REQUEST
@@ -31,10 +42,13 @@ export const loadUserEvents = (): ThunkAction<void, RootState, undefined, EventA
         const events: UserEvent[] = await response.json()
         dispatch({
             type: LOAD_SUCCESS,
-            payload: { events: events }
+            payload: { events }
         });
     } catch (e) {
-
+        dispatch({
+            type: LOAD_FAILURE,
+            error: "Failed to load events."
+        })
     }
 
 }
@@ -45,8 +59,17 @@ const initialState: UserEventsState = {
 }
 
 
-const userEventsReducer = (state: UserEventsState = initialState, action: AnyAction) => {
+const userEventsReducer = (state: UserEventsState = initialState, action: EventAction): UserEventsState => {
     switch (action.type) {
+        case LOAD_SUCCESS:
+            {
+                const { events } = action.payload
+                return {
+                    ...state,
+                    allIds: events.map(({ id }) => id),
+                    byIds: events.reduce<UserEventsState['byIds']>((byIds, currentEvent) => { byIds[currentEvent.id] = currentEvent; return byIds }, {})
+                }
+            }
         default:
             return state
     }
