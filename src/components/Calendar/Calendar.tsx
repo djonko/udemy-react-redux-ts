@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import './Calendar.css'
-import { connect, ConnectedProps } from 'react-redux';
+import { connect, ConnectedProps, useDispatch } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { loadUserEvents, selectUserEventsArray, UserEvent } from '../../redux/user-events';
 import { addZero } from '../../lib/utils';
@@ -53,7 +53,7 @@ const groupEventsByDay = (events: UserEvent[]) => {
 const Calendar: React.FC<Props> = ({ events, loadUserEvents }) => {
     //render for the first time
     useEffect(() => {
-        loadUserEvents();
+        loadUserEvents()
     }, []);
 
     let groupedEvents: ReturnType<typeof groupEventsByDay> | undefined;
